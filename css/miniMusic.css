@@ -1,9 +1,15 @@
+body{
+	background-color: rgba(0,0,0,0);
+}
 #mainWindow{
-	margin: 0 auto;
+	margin-left: 0;
+	margin-top: 0;
 	width: 1000px;
 	height: 700px;
-	background-color: #272822;
 	border-radius: 30px;
+	box-shadow:8px 8px 10px grey;
+	background-color: #272822;
+    user-select: none;
 }
 #leftBox{
 	margin: 0;
@@ -37,6 +43,7 @@
 	line-height: 40px;
 	font-size: 20px;
 	color: yellow;
+    cursor: default;
 }
 .leftLabel{
 	height: 15px;
@@ -44,37 +51,181 @@
 	margin-top: 40px;
 	line-height: 15px;
 	color: white;
+    cursor: default;
 }
-.leftButtons{
+#musicHouse{
 	height: 30px;
+	width: 150px;
 	margin-left: 10px;
 	margin-top: 10px;
 	font-size: 15px;
 	line-height: 30px;
 	color: white;
-	border-top-left-radius: 10px;
-	border-bottom-left-radius: 10px;
-}
-.leftButtons:hover{
-	background-color: #7E57C2;
+	border-radius: 10px;
 	cursor: pointer;
+}
+#musicHouse:hover{
+	background-color: #7E57C2;
+	transform: scale(1.1);
+	box-shadow: 0 0 10px  #7E57C2;
+	cursor: pointer;
+}
+#musicHouse:active{
+    background-color: #C5B5F0;
+	transform: scale(1.2);
+}
+#video{
+	height: 30px;
+	width: 150px;
+	margin-left: 10px;
+	margin-top: 10px;
+	font-size: 15px;
+	line-height: 30px;
+	color: white;
+	border-radius: 10px;
+	cursor: pointer;
+}
+#video:hover{
+	background-color: #7E57C2;
+	transform: scale(1.1);
+	box-shadow: 0 0 10px  #7E57C2;
+	cursor: pointer;
+}
+#video:active{
+	background-color: #C5B5F0;
+	transform: scale(1.2);
+}
+#radio{
+	height: 30px;
+	width: 150px;
+	margin-left: 10px;
+	margin-top: 10px;
+	font-size: 15px;
+	line-height: 30px;
+	color: white;
+	border-radius: 10px;
+	cursor: pointer;
+}
+#radio:hover{
+	background-color: #7E57C2;
+	transform: scale(1.1);
+	box-shadow: 0 0 10px  #7E57C2;
+	cursor: pointer;
+}
+#radio:active{
+	background-color: #C5B5F0;
+	transform: scale(1.2);
+}
+#like{
+	height: 30px;
+	width: 150px;
+	margin-left: 10px;
+	margin-top: 10px;
+	font-size: 15px;
+	line-height: 30px;
+	color: white;
+	border-radius: 10px;
+	cursor: pointer;
+}
+#like:hover{
+	background-color: #7E57C2;
+	transform: scale(1.1);
+	box-shadow: 0 0 10px  #7E57C2;
+	cursor: pointer;
+}
+#like:active{
+	background-color: #C5B5F0;
+	transform: scale(1.2);
+}
+#local{
+	height: 30px;
+	width: 150px;
+	margin-left: 10px;
+	margin-top: 10px;
+	font-size: 15px;
+	line-height: 30px;
+	color: white;
+	border-radius: 10px;
+	cursor: pointer;
+}
+#local:hover{
+	background-color: #7E57C2;
+	transform: scale(1.1);
+	box-shadow: 0 0 10px  #7E57C2;
+	cursor: pointer;
+}
+#local:active{
+	background-color: #C5B5F0;
+	transform: scale(1.2);
+}
+#history{
+	height: 30px;
+	width: 150px;
+	margin-left: 10px;
+	margin-top: 10px;
+	font-size: 15px;
+	line-height: 30px;
+	color: white;
+	border-radius: 10px;
+	cursor: pointer;
+}
+#history:hover{
+	background-color: #7E57C2;
+	transform: scale(1.1);
+	box-shadow: 0 0 10px  #7E57C2;
+	cursor: pointer;
+}
+#history:active{
+	background-color: #C5B5F0;
+	transform: scale(1.2);
+}
+#recentList{
+	height: 30px;
+	width: 150px;
+	margin-left: 10px;
+	margin-top: 10px;
+	font-size: 15px;
+	line-height: 30px;
+	color: white;
+	border-radius: 10px;
+	cursor: pointer;
+}
+#recentList:hover{
+	background-color: #7E57C2;
+	transform: scale(1.1);
+	box-shadow: 0 0 10px  #7E57C2;
+	cursor: pointer;
+}
+#recentList:active{
+	background-color: #C5B5F0;
+	transform: scale(1.2);
 }
 #creatList{
 	border: 0px;
 	color: white;
+    cursor: default;
+}
+#markList{
+	border: 0px;
+	color: white;
+    cursor: default;
 }
 .songList{
 	height: 30px;
 	line-height: 30px;
 	color: white;
 	border-radius: 10px;
+    cursor: pointer;
 }
 .songList:hover{
 	background-color: #7E57C2;
 }
+.songList:active{
+    background-color: #C5B5F0;
+}
 #middleBox{
 	float: left;
-	width: 760px;
+	width: 770px;
 	height: 700px;
 }
 #back_forward{
@@ -86,14 +237,38 @@
 }
 #back{
 	float: left;
-	width: 20px;
+	width: 30px;
 	height: 20px;
+	background-image: url("../img/back.ico");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 20px;
+	border-radius: 10px;
+}
+#back:hover{
+	transform: scale(1.2);
+    cursor: pointer;
+}
+#back:active{
+	transform: scale(1.5);
 }
 #forward{
-	margin-left: 20px;
+	margin-left: 0px;
 	float: left;
-	width: 20px;
+	width: 30px;
 	height: 20px;
+	background-image: url("../img/forward.ico");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 20px;
+	border-radius: 10px;
+}
+#forward:hover{
+	transform: scale(1.2);
+	cursor: pointer;
+}
+#forward:active{
+	transform: scale(1.5);
 }
 #searchBox{
 	float: left;
@@ -108,22 +283,187 @@
 	border-color: #7E57C2;
 }
 #clear:hover{
-	background-color: #7E57C2;
+	transform: scale(1.2);
+	background-color: transparent;
+
+}
+#clear:active{
+	transform: scale(1.5);
 }
 #showArea{
 	margin-top: 60px;
 	width: 760px;
-	height: 640px;
+	height: 570px;
+}
+#playBox{
+	width: 770px;
+	height: 70px;
+}
+#songProgressBox{
+	width: 770px;
+	height: 12px;
+}
+#songProgressBox:hover{
+	cursor: pointer;
+}
+#songProgressBar{
+	position: absolute;
+	margin-top: 5px;
+	width: 770px;
+	height: 2px;
+	background-color: grey;
+}
+#songProgressed{
+	width: 0px;
+	height: 2px;
+	background-color: #7E57C2;
+}
+#songDot{
+	position: absolute;
+	margin-left: 0px;
+	width: 12px;
+	height: 12px;
+	border-radius: 6px;
+	background-color: white;
+	box-shadow: 0 0 10px  #7E57C2;
+}
+#breathDot{
+	margin-left: 3px;
+	margin-top: 3px;
+	width: 6px;
+	height: 6px;
+	border-radius: 3px;
+	background-color: #7E57C2;
+}
+#previousSong{
+	float: left;
+	margin-left: 300px;
+	margin-top: 10px;
+	width: 30px;
+	height: 30px;
+	border-radius: 15px;
+	background-image: url("../img/previousSong.png");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 20px;
+}
+#previousSong:hover{
+	transform: scale(1.2);
+	cursor: pointer;
+}
+#previousSong:active{
+	transform: scale(1.4);
+}
+#playOrPause{
+	float: left;
+	margin-left: 10px;
+	margin-top: 5px;
+	width: 40px;
+	height: 40px;
+	border-radius: 20px;
+	background-image: url("../img/play.png");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 40px;
+}
+#playOrPause:hover{
+	transform: scale(1.1);
+	cursor: pointer;
+}
+#playOrPause:active{
+	transform: scale(1.2);
+}
+#nextSong{
+	float: left;
+	margin-left: 10px;
+	margin-top: 10px;
+	width: 30px;
+	height: 30px;
+	border-radius: 15px;
+	background-image: url("../img/nextSong.png");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 20px;
+}
+#nextSong:hover{
+	transform: scale(1.2);
+	cursor: pointer;
+}
+#nextSong:active{
+	transform: scale(1.4);
+}
+#volumeBox{
+    float: left;
+    margin-left: 220px;
+    margin-top: 15px;
+    width: 130px;
+    height: 20px;
+}
+#volume{
+    float: left;
+    width: 20px;
+    height: 20px;
+	border-radius: 10px;
+	background-image: url("../img/volume.png");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 20px;
+	background-color: transparent;
+}
+#volume:hover{
+	transform: scale(1.2);
+}
+#volume:active{
+	transform: scale(1.5);
+}
+#volumeProgressBox{
+	float: left;
+	margin-left: 10px;
+	margin-top: 4px;
+	width: 100px;
+	height: 12px;
+}
+#volumeProgressBox:hover{
+	cursor: pointer;
+}
+#volumeProgressBar{
+	position: absolute;
+	margin-top: 5px;
+    width: 100px;
+    height: 2px;
+    background-color: grey;
+}
+#volumeProgressed{
+	width: 0px;
+    height: 2px;
+    background-color: #7E57C2;
+}
+#volumeDot{
+	position: absolute;
+	margin-left: 0px;
+	width: 12px;
+	height: 12px;
+	border-radius: 6px;
+	background-color: white;
+	box-shadow: 0 0 10px  #7E57C2;
+}
+#centerDot{
+	margin-left: 3px;
+	margin-top: 3px;
+	width: 6px;
+	height: 6px;
+	border-radius: 3px;
+	background-color: #7E57C2;
 }
 #rightBox{
 	float: left;
-	width: 40px;
+	width: 30px;
 	height: 700px;
 	border-top-right-radius: 30px;
 	border-bottom-right-radius: 30px;
 }
 #close{
-	margin-left: 10px;
+	margin-left: 0;
 	margin-top: 10px;
 	width: 20px;
 	height: 20px;
@@ -131,17 +471,19 @@
 	background-color: red;
 }
 #close:hover{
-	background-color: #272822;
+	background-color: transparent;
 	background-image: url("../img/close.ico");
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: 15px;
+	box-shadow: 0 0 15px  #7E57C2;
+    cursor: pointer;
 }
 #close:active{
-	background-color: #7E57C2;
+	transform: scale(1.5);
 }
 #minimize{
-	margin-left: 10px;
+	margin-left: 0;
 	margin-top: 5px;
 	width: 20px;
 	height: 20px;
@@ -149,31 +491,39 @@
 	background-color: orange;
 }
 #minimize:hover{
-	background-color: #272822;
+	background-color: transparent;
 	background-image: url("../img/minimize.ico");
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: 15px;
+	box-shadow: 0 0 15px  #7E57C2;
+    cursor: pointer;
 }
 #minimize:active{
-	background-color: #7E57C2;
+	transform: scale(1.5);
 }
 #mode{
-	margin-left: 10px;
+	margin-left: 0;
 	margin-top: 5px;
 	width: 20px;
 	height: 20px;
 	border-radius: 15px;
+	background-image: url("../img/dark.ico");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 15px;
+    background-color: transparent;
 }
 #mode:hover{
-	background-color: black;
+	transform: scale(1.2);
+	box-shadow: 0 0 15px  #7E57C2;
 	cursor: pointer;
 }
 #mode:active{
-	background-color: #7E57C2;
+	transform: scale(1.5);
 }
 #setting{
-	margin-left: 10px;
+	margin-left: 0;
 	margin-top: 5px;
 	width: 20px;
 	height: 20px;
@@ -184,9 +534,20 @@
 	background-size: 20px;
 }
 #setting:hover{
-	background-color: green;
+	transform: scale(1.2);
+	box-shadow: 0 0 15px  #7E57C2;
 	cursor: pointer;
 }
 #setting:active{
-	background-color: #7E57C2;
+	transform: scale(1.5);
+}
+#dragArea{
+	margin-left: 0;
+	width: 30px;
+	height: 595px;
+	border-bottom-right-radius: 30px;
+	-webkit-app-region: drag;
+}
+#dragArea:active{
+	cursor: move;
 }

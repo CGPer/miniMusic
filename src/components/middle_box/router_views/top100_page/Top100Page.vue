@@ -1,14 +1,21 @@
 <template>
   <div class="top-100-page">
+    <div class="top-100-backtop" @click="backTop" v-show="isShowBackTop">
+        <img src="@/assets/backtop.svg" width="30px">
+    </div>
     <div class="top-100-title">Top 100</div>
-    <div class="top-100-item-box">
+    <div class="top-100-item-box" ref="top100ItemBoxDom">
       <div
         class="top-100-item"
-        v-for="(item, index) in $store.state.top100List"
+        v-for="(item, index) in top100List"
         :key="index"
-        :style="{
-          transform: $store.state.top100ListIndex == index ? 'scale(1.1)' : '',
-        }"
+        :style="
+          currentList.length === 0
+            ? ''
+            : currentList[currentListIndex].songmid === item.songmid
+            ? playingSongStyle
+            : ''
+        "
       >
         <img
           class="top-100-mark-img"
@@ -31,32 +38,58 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: "top-100-page",
   data() {
     return {
       markImgUrl: require("@/assets/mark.svg"),
       markedImgUrl: require("@/assets/marked.svg"),
-      scrollerPosition: 0
+      scrollerPosition: 0,
+      isShowBackTop: false,
+      playingSongStyle: {
+        "transform": "scale(1.1)",
+      },
     };
   },
-  created() {
+  computed: {
+    ...mapState({
+      currentList: (state) => state.currentList,
+      currentListIndex: (state) => state.currentListIndex,
+      top100List: state => state.top100List,
+      markedList: state => state.markedList,
+    }),
+  },
+  mounted() {
     this.$store.commit('handleTop100List')
+
+    //当滑块滑动到一定距离再出现
+    this.$refs.top100ItemBoxDom.addEventListener('scroll', () => {
+      if(this.$refs.top100ItemBoxDom.scrollTop > 600) {
+        this.isShowBackTop = true
+      } else {
+        this.isShowBackTop = false
+      }
+    })
   },
   beforeRouteLeave(to, from, next) {
     //记下离开时滑块位置
-    this.scrollerPosition = document.querySelector('.top-100-item-box').scrollTop
+    this.scrollerPosition = this.$refs.top100ItemBoxDom.scrollTop
     next()
   },
   activated() {
     //激活后恢复滑块位置
-    document.querySelector('.top-100-item-box').scrollTop = this.scrollerPosition
+    this.$refs.top100ItemBoxDom.scrollTop = this.scrollerPosition
   },
   methods: {
     playThisSong(item, index) {
-      var top100ListIndex = index;
-      this.$store.commit("sendTop100PageActive");
-      this.$store.commit("sendTop100ListIndex", top100ListIndex);
+      var payload = {
+        index: index,
+        activatedPage: 'top100Page'
+      }
+
+      this.$store.commit("sendCurrentIndex", payload)
       this.$store.commit("playCurrentSong");
     },
 
@@ -65,16 +98,20 @@ export default {
     },
 
     setMarkImgUrl(item) {
-      if (this.$store.state.markedList.length != 0) {
+      if (this.markedList.length !== 0) {
         //将已mark的歌曲逐一与Top100列表对比，如有mark中的歌曲，则红心点亮
         var haveMatchedId = false;
-        for (let i = 0; i < this.$store.state.markedList.length; i++) {
-          if (item.songmid === this.$store.state.markedList[i].songmid) {
+        for (let i = 0; i < this.markedList.length; i++) {
+          if (item.songmid === this.markedList[i].songmid) {
             haveMatchedId = true;
           }
         }
       }
       return haveMatchedId === true ? this.markedImgUrl : this.markImgUrl;
+    },
+
+    backTop() {
+      this.$refs.top100ItemBoxDom.scrollTop = 0
     },
   },
 };
@@ -102,6 +139,26 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-evenly;
+}
+
+.top-100-backtop {
+  width: 30px;
+  height: 30px;
+  margin-left: 715px;
+  margin-top: 640px;
+  position: fixed;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  z-index: 3;
+}
+
+.top-100-backtop:hover {
+  cursor: pointer;
+  transform: scale(1.1);
+}
+
+.top-100-backtop:active {
+  transform: scale(1.2);
 }
 
 .top-100-item {

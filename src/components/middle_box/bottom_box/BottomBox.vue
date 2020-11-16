@@ -5,7 +5,8 @@
         <div
           class="progressed"
           :style="{
-            width: duration == null ? 0 : (currentTime / duration) * 760 + 'px',
+            width:
+              duration === null ? 0 : (currentTime / duration) * 760 + 'px',
           }"
         ></div>
       </div>
@@ -13,8 +14,8 @@
         class="slider-dot"
         :style="{
           'margin-left':
-            (duration == null ? (-6) : ((currentTime / duration) * 760 - 6)
-            ) + 'px',
+            (duration === null ? -6 : (currentTime / duration) * 760 - 6) +
+            'px',
         }"
         @mousedown="songDotDown"
         @mousemove="songDotMove"
@@ -34,12 +35,16 @@
         <img src="@/assets/arrow-up.svg" />
       </div>
       <div class="speed-options-box" v-show="isShowSpeedOptions">
-        <div class="speed-option" @click="speed_2_0x">2.0x</div>
-        <div class="speed-option" @click="speed_1_5x">1.5x</div>
-        <div class="speed-option" @click="speed_1_25x">1.25x</div>
-        <div class="speed-option" @click="speed_1_0x">1.0x</div>
-        <div class="speed-option" @click="speed_0_75x">0.75x</div>
-        <div class="speed-option" @click="speed_0_5x">0.5x</div>
+        <div class="speed-option" @click="changeSpeed(2, '2x')">2.0x</div>
+        <div class="speed-option" @click="changeSpeed(1.5, '1.5x')">1.5x</div>
+        <div class="speed-option" @click="changeSpeed(1.25, '1.25x')">
+          1.25x
+        </div>
+        <div class="speed-option" @click="changeSpeed(1, '1.0x')">1.0x</div>
+        <div class="speed-option" @click="changeSpeed(0.75, '0.75x')">
+          0.75x
+        </div>
+        <div class="speed-option" @click="changeSpeed(0.5, '0.5x')">0.5x</div>
       </div>
     </div>
     <div class="play-mode-box">
@@ -51,26 +56,33 @@
         width="20px"
       />
       <div class="mode-options-box" v-show="isShowModeOptions">
-        <div class="mode-option" @click="listForwardMode">
+        <div class="mode-option" @click="changePlayMode('listForwardMode')">
           <img src="@/assets/list-forward.svg" />
           <div class="mode-option-text">顺序播放</div>
         </div>
-        <div class="mode-option" @click="singleCycleMode">
+        <div class="mode-option" @click="changePlayMode('singleCycleMode')">
           <img src="@/assets/single-cycle.svg" />
           <div class="mode-option-text">单曲循环</div>
         </div>
-        <div class="mode-option" @click="listCycleMode">
+        <div class="mode-option" @click="changePlayMode('listCycleMode')">
           <img src="@/assets/list-cycle.svg" />
           <div class="mode-option-text">列表循环</div>
         </div>
-        <div class="mode-option" @click="randomMode">
+        <div class="mode-option" @click="changePlayMode('randomMode')">
           <img src="@/assets/random.svg" />
           <div class="mode-option-text">随机播放</div>
         </div>
       </div>
     </div>
     <div class="mark-box">
-        <img @click="markSong" :src="$store.state.currentListItem === null? this.markImgUrl : setMarkImgUrl">
+      <img
+        @click="markSong"
+        :src="
+          currentList[currentListIndex] === null
+            ? this.markImgUrl
+            : setMarkImgUrl
+        "
+      />
     </div>
     <div class="play-contral-box">
       <div class="previous-song" @click="playPreviousSong">
@@ -101,7 +113,7 @@
         </div>
         <div
           class="slider-dot"
-          :style="{ 'margin-left': (volumeDotX - 6) + 'px' }"
+          :style="{ 'margin-left': volumeDotX - 6 + 'px' }"
           @mousedown="volumeDotDown"
           @mousemove="volumeDotMove"
         >
@@ -109,12 +121,12 @@
         </div>
       </div>
     </div>
-    <audio id="audio" :src="this.$store.state.currentSongUrl" autoplay></audio>
+    <audio id="audio" :src="currentSongUrl" autoplay></audio>
   </div>
 </template>
 
 <script>
-import { request } from "@/network/request.js";
+import { mapState } from "vuex";
 
 export default {
   name: "bottom-box",
@@ -148,6 +160,15 @@ export default {
     };
   },
   computed: {
+    ...mapState({
+      currentList: (state) => state.currentList,
+      currentListIndex: (state) => state.currentListIndex,
+      currentSongUrl: (state) => state.currentSongUrl,
+      markedList: (state) => state.markedList,
+      playMode: (state) => state.playMode,
+      isSearchInputOnFocus: (state) => state.isSearchInputOnFocus,
+    }),
+
     showTime() {
       //实时显示歌曲播放时间进度
       var current_m = Math.floor(this.currentTime / 60);
@@ -169,16 +190,56 @@ export default {
     },
 
     setMarkImgUrl() {
-      //将已mark的歌曲逐一与当前播放歌曲对比，如有mark中的歌曲，则红心点亮
-      var haveMatchedId = false
-      for(let i=0; i<this.$store.state.markedList.length; i++) {
-        if(this.$store.state.currentList[this.$store.state.currentListIndex].songmid === this.$store.state.markedList[i].songmid) {
-          haveMatchedId = true
-          break
+      var isCurrentListEmpty = false;
+      if (this.currentList.length !== 0) {
+        //将已mark的歌曲逐一与当前播放歌曲对比，如有mark中的歌曲，则红心点亮
+        var haveMatchedId = false;
+        for (let i = 0; i < this.markedList.length; i++) {
+          if (
+            this.currentList[this.currentListIndex].songmid ===
+            this.markedList[i].songmid
+          ) {
+            haveMatchedId = true;
+            break;
+          }
         }
+      } else {
+        isCurrentListEmpty = true;
       }
-      return haveMatchedId === true ? this.markedImgUrl : this.markImgUrl
+      return isCurrentListEmpty
+        ? this.markImgUrl
+        : haveMatchedId === true
+        ? this.markedImgUrl
+        : this.markImgUrl;
+    },
+  },
+  watch: {
+    //由于按键监听会干扰搜索输入，所以这里监测用户是否正在搜索输入
+    //搜索时一定要移除按键监听,搜索结束再添加监听
+    isSearchInputOnFocus: function () {
+      if (this.isSearchInputOnFocus === true) {
+        document.removeEventListener("keydown", this.keyDown);
+      } else {
+        document.addEventListener("keydown", this.keyDown);
+      }
+    },
+  },
+  mounted() {
+    //获取历史音量值
+    if (localStorage.hasOwnProperty("volumeDotX")) {
+      this.volumeDotX = parseInt(localStorage.getItem("volumeDotX"));
     }
+
+    //初始化audio
+    var audio = document.querySelector("#audio");
+    this.audio = audio;
+    this.audio.volume = this.volumeDotX / 120;
+    this.audio.playbackRate = this.playSpeed;
+
+    //添加监听
+    this.addAudioEventListeners();
+    this.addKeyboardEventListener();
+    this.addMouseUpEventListener();
   },
   methods: {
     addAudioEventListeners() {
@@ -187,68 +248,94 @@ export default {
       this.audio.addEventListener("ended", this.autoPlayNextSong);
     },
 
+    addKeyboardEventListener() {
+      document.addEventListener("keydown", this.keyDown);
+    },
+
+    addMouseUpEventListener() {
+      document.addEventListener("mouseup", this.mouseUp);
+    },
+
+    keyDown(e) {
+      //防止按空格键页面向下滚动
+      e.preventDefault();
+
+      switch (e.code) {
+        //空格键为暂停或播放
+        case "Space":
+          this.playContral();
+          break;
+
+        //方向右键为下一首
+        case "ArrowRight":
+          this.playNextSong();
+          break;
+
+        //方向左键为上一首
+        case "ArrowLeft":
+          this.playPreviousSong();
+          break;
+
+        //方向上键为音量加20%
+        case "ArrowUp":
+          if (this.volumeDotX < 120) {
+            this.volumeDotX += 24;
+            if (this.volumeDotX > 120) {
+              this.volumeDotX = 120;
+            }
+            this.audio.volume = this.volumeDotX / 120;
+          }
+          break;
+
+        //方向下键为音量减20%
+        case "ArrowDown":
+          if (this.volumeDotX > 0) {
+            this.volumeDotX -= 24;
+            if (this.volumeDotX < 0) {
+              this.volumeDotX = 0;
+            }
+            this.audio.volume = this.volumeDotX / 120;
+          }
+          break;
+      }
+    },
+
+    mouseUp() {
+      this.isSongDotMovable = false;
+      this.isVolumeDotMovable = false;
+      this.audio.volume = this.volumeDotX / 120;
+
+      //保存音量到本地
+      localStorage.setItem("volumeDotX", this.volumeDotX.toString());
+    },
+
     getDuration() {
       this.duration = this.audio.duration;
       this.playStateImgUrl = this.playingImgUrl;
 
       //将上一首的播放速率延续到下一首
-      this.audio.playbackRate = this.playSpeed
+      this.audio.playbackRate = this.playSpeed;
 
       //检测app是否是刚启动，防止刚启动专辑图片就开始旋转
-      this.$store.commit('sendHaveStarted', true)
-      
+      this.$store.commit("sendHaveStarted", true);
+
       //app已启动，播放歌曲专辑图片开始转动
-      this.$store.commit('albumRotateRunning')
+      this.$store.commit("albumRotateRunning");
     },
 
     getCurrentTime() {
       this.currentTime = this.audio.currentTime;
-      this.$store.commit('sendCurrentTime', this.currentTime)
+      this.$store.commit("sendCurrentTime", this.currentTime);
     },
 
     changeCurrentTime(value) {
       this.audio.currentTime = value;
     },
 
-    speed_2_0x() {
-      this.playSpeed = 2
+    changeSpeed(rate, text) {
+      this.playSpeed = rate;
       this.audio.playbackRate = this.playSpeed;
-      this.speedText = "2x";
-      this.isShowSpeedOptions = false;
-    },
-
-    speed_1_5x() {
-      this.playSpeed = 1.5
-      this.audio.playbackRate = this.playSpeed;
-      this.speedText = "1.5x";
-      this.isShowSpeedOptions = false;
-    },
-
-    speed_1_25x() {
-      this.playSpeed = 1.25
-      this.audio.playbackRate = this.playSpeed;
-      this.speedText = "1.25x";
-      this.isShowSpeedOptions = false;
-    },
-
-    speed_1_0x() {
-      this.playSpeed = 1
-      this.audio.playbackRate = this.playSpeed;
-      this.speedText = "1x";
-      this.isShowSpeedOptions = false;
-    },
-
-    speed_0_75x() {
-      this.playSpeed = 0.75
-      this.audio.playbackRate = this.playSpeed;
-      this.speedText = "0.75x";
-      this.isShowSpeedOptions = false;
-    },
-
-    speed_0_5x() {
-      this.playSpeed = 0.5
-      this.audio.playbackRate = this.playSpeed;
-      this.speedText = "0.5x";
+      this.speedText = text;
       this.isShowSpeedOptions = false;
     },
 
@@ -258,24 +345,22 @@ export default {
       }, 200);
     },
 
-    listForwardMode() {
-      this.$store.commit("sendListForwardMode");
-      this.modeStateImgUrl = this.listForwardImgUrl;
-    },
-
-    singleCycleMode() {
-      this.$store.commit("sendSingleCycleMode");
-      this.modeStateImgUrl = this.singleCycleImgUrl;
-    },
-
-    listCycleMode() {
-      this.$store.commit("sendListCycleMode");
-      this.modeStateImgUrl = this.listCycleImgUrl;
-    },
-
-    randomMode() {
-      this.$store.commit("sendRandomMode");
-      this.modeStateImgUrl = this.randomImgUrl;
+    changePlayMode(mode) {
+      this.$store.commit("sendPlayMode", mode);
+      switch (mode) {
+        case "listForwardMode":
+          this.modeStateImgUrl = this.listForwardImgUrl;
+          break;
+        case "singleCycleMode":
+          this.modeStateImgUrl = this.singleCycleImgUrl;
+          break;
+        case "listCycleMode":
+          this.modeStateImgUrl = this.listCycleImgUrl;
+          break;
+        case "randomMode":
+          this.modeStateImgUrl = this.randomImgUrl;
+          break;
+      }
     },
 
     hideModeOptions() {
@@ -286,80 +371,87 @@ export default {
 
     markSong() {
       //防止当前没歌却点击mark
-      if(this.$store.state.currentList.length != 0) {
-        this.$store.commit('sendMarkedSong', this.$store.state.currentList[this.$store.state.currentListIndex])
+      if (this.currentList.length !== 0) {
+        this.$store.commit(
+          "sendMarkedSong",
+          this.currentList[this.currentListIndex]
+        );
       }
     },
 
     playPreviousSong() {
       //随机播放模式下，上一首也是随机
-      if(this.$store.state.playMode == "randomMode") {
+      if (this.playMode === "randomMode") {
         this.$store.commit("handleRandomMode");
-      }else {
+      } else {
         //其他模式上一首按顺序播放上一首
         this.$store.commit("playPreviousSong");
       }
 
-      //上一首将播放速度设置为用户设置的播放速度
+      //将上一首的播放速度设置为用户设置的播放速度
       //因为切歌后播放速度会自动恢复到1
-      setTimeout( () => {
+      setTimeout(() => {
         this.audio.playbackRate = this.playSpeed;
-      }, 1000)
+      }, 1000);
     },
 
     playContral() {
-      if (this.$store.state.currentList.length != 0) {
-        //确保当前有歌单才能播放或暂停
+      //确保当前有歌单才能播放或暂停
+      if (this.currentList.length !== 0) {
         if (this.audio.paused) {
           this.audio.play();
           this.playStateImgUrl = this.playingImgUrl;
-          this.$store.commit('albumRotateRunning')
+          this.$store.commit("albumRotateRunning");
         } else {
           this.audio.pause();
           this.playStateImgUrl = this.pausedImgUrl;
-          this.$store.commit('albumRotatePaused')
+          this.$store.commit("albumRotatePaused");
         }
+      } else {
+        this.audio.pause();
+        this.playStateImgUrl = this.pausedImgUrl;
+        this.$store.commit("albumRotatePaused");
       }
     },
 
     autoPlayNextSong() {
-      switch (this.$store.state.playMode) {
+      switch (this.playMode) {
         case "listForwardMode":
           //默认顺序播放，不做处理,直接下一首
           this.$store.commit("playNextSong");
-          break
+          break;
 
         case "singleCycleMode":
           //单曲循环，播完又开始播
-          this.audio.play()
-          break
+          this.audio.play();
+          break;
 
         case "listCycleMode":
-          //列表循环处理已嵌入vuex中的playNextSong中，所以直接下一首
+          //列表循环，处理已嵌入vuex中的playNextSong中，所以直接下一首
           this.$store.commit("playNextSong");
-          break
+          break;
 
         case "randomMode":
+          //随机播放
           this.$store.commit("handleRandomMode");
-          console.log('randomMode')
-          break
+          break;
       }
 
-      setTimeout( () => {
+      setTimeout(() => {
         this.audio.playbackRate = this.playSpeed;
-      }, 1000)
+      }, 1000);
     },
 
     playNextSong() {
-      if(this.$store.state.playMode == "randomMode") {
+      if (this.playMode == "randomMode") {
         this.$store.commit("handleRandomMode");
-      }else {
+      } else {
         this.$store.commit("playNextSong");
       }
 
-      setTimeout( () => {
+      setTimeout(() => {
         this.audio.playbackRate = this.playSpeed;
-      }, 1000)
+      }, 1000);
     },
 
     songDotDown(e) {
@@ -370,7 +462,9 @@ export default {
 
     songDotMove(e) {
       if (this.isSongDotMovable) {
-        this.songDotX = e.x - this.$refs.progressBox.getBoundingClientRect().left
+        //滑动距离等于点击位置坐标减去progressBox左侧坐标
+        this.songDotX =
+          e.x - this.$refs.progressBox.getBoundingClientRect().left;
         if (this.songDotX < 0) {
           //防止滑块滑出界
           this.songDotX = 0;
@@ -385,19 +479,20 @@ export default {
     },
 
     setSongDot(e) {
-      this.songDotX = e.x - this.$refs.progressBox.getBoundingClientRect().left
+      this.songDotX = e.x - this.$refs.progressBox.getBoundingClientRect().left;
       this.audio.currentTime = (this.songDotX / 760) * this.duration;
       this.audio.play();
     },
 
-    volumeDotDown(e) {
+    volumeDotDown() {
       this.isVolumeDotMovable = true;
     },
 
     volumeDotMove(e) {
       if (this.isVolumeDotMovable) {
         //音量坐标等于移动后坐标减去volume-adjust-box左侧的坐标
-        this.volumeDotX = e.x - this.$refs.volumeAdjustBox.getBoundingClientRect().left
+        this.volumeDotX =
+          e.x - this.$refs.volumeAdjustBox.getBoundingClientRect().left;
         if (this.volumeDotX < 0) {
           this.volumeDotX = 0;
         }
@@ -409,23 +504,15 @@ export default {
     },
 
     setVolumeDot(e) {
-      this.volumeDotX = e.x - this.$refs.volumeAdjustBox.getBoundingClientRect().left;
-      if(this.volumeDotX < 0 ) {
-        this.volumeDotX = 0
+      this.volumeDotX =
+        e.x - this.$refs.volumeAdjustBox.getBoundingClientRect().left;
+      if (this.volumeDotX < 0) {
+        this.volumeDotX = 0;
       }
-      if(this.volumeDotX > 120 ) {
-        this.volumeDotX = 120
+      if (this.volumeDotX > 120) {
+        this.volumeDotX = 120;
       }
       this.audio.volume = this.volumeDotX / 120;
-    },
-
-    mouseUp() {
-      this.isSongDotMovable = false;
-      this.isVolumeDotMovable = false;
-      this.audio.volume = this.volumeDotX / 120;
-
-      //保存音量到本地
-      localStorage.setItem('volumeDotX', this.volumeDotX.toString())
     },
 
     mute() {
@@ -442,19 +529,6 @@ export default {
         this.volumeStateImgUrl = this.volumeImgUrl;
       }
     },
-  },
-  mounted() {
-    //重上次恢复音量
-    if(localStorage.hasOwnProperty('volumeDotX')) {
-      this.volumeDotX = parseInt(localStorage.getItem('volumeDotX'))
-    }
-    
-    var audio = document.querySelector("#audio");
-    this.audio = audio;
-    this.audio.volume = this.volumeDotX / 120;
-    this.audio.playbackRate = this.playSpeed 
-    this.addAudioEventListeners();
-    this.globalMouseUp(this.mouseUp);
   },
 };
 </script>
@@ -624,7 +698,7 @@ export default {
   height: 115px;
   position: absolute;
   margin-top: -105px;
-  margin-left: -25px;
+  margin-left: -35px;
   border-radius: 10px;
   background-color: white;
   box-shadow: 0 0 10px var(--highlight-deep-color);

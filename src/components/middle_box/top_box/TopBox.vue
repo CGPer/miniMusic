@@ -1,36 +1,23 @@
 <template>
-  <div class="top-box">
-    <div class="back-or-forward">
-      <img @click="goBack" src="@/assets/back.svg" width="20px" />
-      <img @click="goForward" src="@/assets/forward.svg" width="20px" />
-    </div>
-    <input
-      type="text"
-      class="search-input"
-      v-model.trim="searchText"
-      @change="searchSong"
-      placeholder="搜索音乐"
-      @focus="isShowSearchHistory = true"
-      @blur="hideSearchHistory"
-      @input="isShowSearchHistory = true"
-    />
-    <div class="search-history-box" v-show="isShowSearchHistory">
-      <div
-        class="search-history-item"
-        v-for="(item, index) in searchHistoryArr"
-        :key="index"
-      >
-        <div class="search-history-block">
-          <div class="search-history-block-text" @click="searchThisText(item)">
-            {{ item.searchText }}
-          </div>
-          <div class="delete-this-search-text" @click="deleteSearchText(index)">
-            <img src="@/assets/delete-search-text.svg" width="20px" />
-          </div>
+<div class="top-box">
+  <div class="back-or-forward">
+    <img @click="goBack" src="@/assets/back.svg" width="20px" />
+    <img @click="goForward" src="@/assets/forward.svg" width="20px" />
+  </div>
+  <input type="text" class="search-input" v-model.trim="searchText" @change="searchSong" placeholder="搜索音乐" @focus="showSearchHistory" @blur="hideSearchHistory" @input="isShowSearchHistory = true" />
+  <div class="search-history-box" v-show="isShowSearchHistory">
+    <div class="search-history-item" v-for="(item, index) in searchHistoryArr" :key="index">
+      <div class="search-history-block">
+        <div class="search-history-block-text" @click="searchThisText(item)">
+          {{ item.searchText }}
+        </div>
+        <div class="delete-this-search-text" @click="deleteSearchText(index)">
+          <img src="@/assets/delete-search-text.svg" width="20px" />
         </div>
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -44,7 +31,8 @@ export default {
       isDeletingSearchText: false,
     };
   },
-  created() {
+  mounted() {
+    //获取历史搜索记录
     if (localStorage.hasOwnProperty("serachHistoryArr")) {
       this.searchHistoryArr = JSON.parse(
         localStorage.getItem("serachHistoryArr")
@@ -62,7 +50,7 @@ export default {
 
     searchSong() {
       this.isShowSearchHistory = false
-      if (this.searchText != "") {
+      if (this.searchText !== "") {
         //防止输入空格也被用于请求歌曲
         this.$router.push("SearchListPage");
         this.$store.commit("handleSearchSong", this.searchText);
@@ -71,7 +59,7 @@ export default {
       //下面开始记录搜索历史和搜索频率
       var thisSearchText = this.searchText;
 
-      if (thisSearchText != "") {
+      if (thisSearchText !== "") {
         //防止空格加入搜索历史
         var searchHistoryObj = {
           searchText: thisSearchText,
@@ -112,22 +100,32 @@ export default {
           "serachHistoryArr",
           JSON.stringify(this.searchHistoryArr)
         );
-        console.log(this.searchHistoryArr);
       }
     },
 
     searchThisText(item) {
       this.searchText = item.searchText;
       this.searchSong();
+
+      //搜索后将搜索页面滑动到顶端
+      this.$EventBus.$emit("scrollToTop")
+
+      //隐藏搜索提示框
       this.isShowSearchHistory = false;
     },
 
+    showSearchHistory() {
+      this.isShowSearchHistory = true
+      this.$store.commit("sendSearchInputOnFocus", true)
+    },
+
     hideSearchHistory() {
+      this.$store.commit("sendSearchInputOnFocus", false)
       //延时隐藏历史搜索，不然点击历史搜索无法输入
       setTimeout(() => {
-        
-        //不是删除历史搜索词条时，才隐藏搜索历史
-        if(this.isDeletingSearchText === false) {
+
+        //删除历史搜索词条时，防止失焦隐藏搜索历史
+        if (this.isDeletingSearchText === false) {
           this.isShowSearchHistory = false;
         }
       }, 200);
@@ -135,6 +133,7 @@ export default {
 
     deleteSearchText(index) {
       this.isDeletingSearchText = true;
+      //删除用户想要删除的历史搜索词条
       this.searchHistoryArr.splice(index, 1);
       //将搜索历史保存到浏览器
       localStorage.setItem(
@@ -156,9 +155,7 @@ export default {
 .top-box {
   width: 100%;
   height: 50px;
-  /* display: flex; */
   position: relative;
-  /* align-items: center; */
 }
 
 .back-or-forward {
@@ -192,6 +189,7 @@ export default {
   float: left;
   margin-left: 50px;
   margin-top: 10px;
+  padding-left: 8px;
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 10px;
 }
@@ -221,8 +219,6 @@ export default {
   margin-left: 5px;
   margin-top: 10px;
   border-radius: 8px;
-  /* border: 1px solid var(--highlight-deep-color); */
-  /* background-color: var(--highlight-color); */
   box-shadow: 0 0 5px var(--highlight-deep-color);
 }
 

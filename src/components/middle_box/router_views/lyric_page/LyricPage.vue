@@ -1,10 +1,6 @@
 <template>
   <div class="lyric-page" ref="lyricPage">
-    <div
-      class="lyric-item"
-      v-for="(item, index) in $store.state.lyricTextArr"
-      :key="index"
-    >
+    <div class="lyric-item" v-for="(item, index) in lyricTextArr" :key="index">
       <div class="lyric-text-line" :style="setplayingLyricStyle(item, index)">
         {{ item.text }}
       </div>
@@ -13,6 +9,8 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   name: "lyric-page",
   data() {
@@ -22,27 +20,34 @@ export default {
         color: "var(--highlight-deep-color)",
       },
       currentLyricIndex: 0,
-      scrollTop: 0
+      scrollTop: 0,
     };
   },
+  computed: {
+    ...mapState({
+      lyricTextArr: (state) => state.lyricTextArr,
+      currentTime: (state) => state.currentTime,
+    }),
+  },
   watch: {
-    currentLyricIndex: function() {
-      this.$refs.lyricPage.scrollTop = 0
-      if(this.currentLyricIndex > 6) {
-        this.$refs.lyricPage.scrollTop = 40 * (this.currentLyricIndex - 6)
+    //将正在唱的歌词滚动到中间位置
+    currentLyricIndex: function () {
+      this.$refs.lyricPage.scrollTop = 0;
+      if (this.currentLyricIndex > 7) {
+        this.$refs.lyricPage.scrollTop = 40 * (this.currentLyricIndex - 7);
       }
-    }
+    },
   },
   methods: {
     setplayingLyricStyle(item, index) {
+      //判断歌词时间并设置当前歌词样式
       if (
-        this.$store.state.currentTime > item.time &&
-        (index === this.$store.state.lyricTextArr.length - 1
+        this.currentTime > item.time &&
+        (index === this.lyricTextArr.length - 1
           ? true
-          : this.$store.state.currentTime <
-            this.$store.state.lyricTextArr[index + 1].time)
+          : this.currentTime < this.lyricTextArr[index + 1].time)
       ) {
-        this.currentLyricIndex = index
+        this.currentLyricIndex = index;
         return this.playingLyricStytle;
       }
     },

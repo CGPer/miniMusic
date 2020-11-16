@@ -26,21 +26,21 @@
       <img
         :src="getAlbumImgUrl"
         :style="
-          $store.state.haveStarted == true ? $store.state.albumImgStyle : ''
+          haveStarted === true ? albumImgStyle : ''
         "
       />
       <div class="playing-song-name">
         {{
-          $store.state.currentList.length == 0
+          currentList.length === 0
             ? ""
-            : $store.state.currentList[this.$store.state.currentListIndex].songname
+            : currentList[currentListIndex].songname
         }}
       </div>
       <div class="playing-singer-name">
         {{
-          $store.state.currentList.length == 0
+          currentList.length == 0
             ? ""
-            : $store.state.currentList[this.$store.state.currentListIndex].singer.name
+            : currentList[currentListIndex].singer.name
         }}
       </div>
     </div>
@@ -48,6 +48,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: "left-nav",
   data() {
@@ -57,15 +59,22 @@ export default {
     };
   },
   computed: {
+    ...mapState({
+      haveStarted: state => state.haveStarted,
+      albumImgStyle: state => state.albumImgStyle,
+      currentList: state => state.currentList,
+      currentListIndex: state => state.currentListIndex,
+    }),
+
     getAlbumImgUrl() {
       //刚启动和歌曲没有专辑图片时，使用默认专辑图片作为背景
       if (
-        this.$store.state.currentList.length == 0 ||
-        this.$store.state.currentList[this.$store.state.currentListIndex].albumname == "   "
+        this.currentList.length === 0 ||
+        this.currentList[this.currentListIndex].albumname === "   "
       ) {
         this.albumImgUrl = this.defaultAlbumImgUrl;
       } else {
-        this.albumImgUrl = this.$store.state.currentList[this.$store.state.currentListIndex].albumimg;
+        this.albumImgUrl = this.currentList[this.currentListIndex].albumimg;
       }
       return this.albumImgUrl;
     },

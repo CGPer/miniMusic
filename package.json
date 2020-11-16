@@ -1,6 +1,6 @@
 {
   "name": "mini-music",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "一个简单、美观的音乐播放器",
   "homepage": "https://gitee.com/cgper/miniMusic",
   "author": {
@@ -32,6 +32,7 @@
     "@vue/cli-plugin-router": "~4.5.0",
     "@vue/cli-plugin-vuex": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
+    "babel-plugin-component": "^1.1.1",
     "electron": "^9.0.0",
     "electron-devtools-installer": "^3.1.0",
     "vue-cli-plugin-electron-builder": "~2.0.0-rc.4",

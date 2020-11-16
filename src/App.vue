@@ -1,16 +1,15 @@
 <template>
-  <div id="app">
-    <div class="app-background" :style="getBgStyle"></div>
-    <div class="app-background-above">
-      <left-nav></left-nav>
-      <middle-box></middle-box>
-      <right-bar></right-bar>
-    </div>
+<div id="app">
+  <div class="app-background" :style="getBgStyle"></div>
+  <div class="app-background-above">
+    <left-nav></left-nav>
+    <middle-box></middle-box>
+    <right-bar></right-bar>
   </div>
+</div>
 </template>
 
 <script>
-
 import LeftNav from './components/left_nav/LeftNav'
 import MiddleBox from './components/middle_box/MiddleBox'
 import RightBar from './components/right_bar/RightBar'
@@ -32,9 +31,9 @@ export default {
   computed: {
     getBgStyle() {
       //刚启动和歌曲没有专辑图片时，使用默认专辑图片作为背景
-      if(this.$store.state.currentList.length == 0 || this.$store.state.currentList[this.$store.state.currentListIndex].albumname == "   ") {
+      if (this.$store.state.currentList.length == 0 || this.$store.state.currentList[this.$store.state.currentListIndex].albumname == "   ") {
         this.albumImgUrl = this.defaultAlbumImgUrl
-      }else {
+      } else {
         this.albumImgUrl = this.$store.state.currentList[this.$store.state.currentListIndex].albumimg
       }
 
@@ -44,20 +43,19 @@ export default {
         this.bgStyle = {
           'background-image': 'url(' + this.albumImgUrl + ')'
         }
-      },1000)
-      
+      }, 1000)
+
       return this.bgStyle
     }
   },
   mounted() {
-    this.$store.commit('initData')
+    this.$store.commit('getHistoryData')
     this.$router.push('Top100Page')
   }
 }
 </script>
 
 <style>
-
 :root {
   --highlight-color: #c5b5f0;
   --highlight-deep-color: #7E57C2;
@@ -98,11 +96,11 @@ export default {
 
 ::-webkit-scrollbar-thumb {
   border-radius: 5px;
-  background-color: rgba(255,255,255,0.4);
+  background-color: rgba(255, 255, 255, 0.4);
 }
 
 ::-webkit-scrollbar-track {
   border-radius: 5px;
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 </style>

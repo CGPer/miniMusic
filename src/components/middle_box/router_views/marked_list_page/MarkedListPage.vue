@@ -9,16 +9,15 @@
     <div class="marked-list-box">
       <div
         class="marked-list-item"
-        v-for="(item, index) in this.$store.state.markedList"
+        v-for="(item, index) in markedList"
         :key="index"
-        
-        :style="{
-          'background-color':
-            $store.state.markedListIndex == index
-              ? 'var(--highlight-color)'
-              : '',
-          'border-radius': $store.state.markedListIndex == index ? '10px' : '0',
-        }"
+        :style="
+          currentList.length === 0
+            ? ''
+            : currentList[currentListIndex].songmid === item.songmid
+            ? playingSongStyle
+            : ''
+        "
       >
         <div class="mark-img">
           <img :src="markedImgUrl" @click="markSong(item, index)" width="18px" />
@@ -32,13 +31,26 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   name: "marked-list-page",
   data() {
     return {
       markedImgUrl: require("@/assets/marked.svg"),
-      scrollerPosition: 0
+      scrollerPosition: 0,
+      playingSongStyle: {
+        "background-color": "var(--highlight-color)",
+        "border-radius": "10px",
+      },
     }
+  },
+  computed: {
+    ...mapState({
+      currentList: (state) => state.currentList,
+      currentListIndex: (state) => state.currentListIndex,
+      markedList: (state) => state.markedList,
+    }),
   },
   beforeRouteLeave(to, from, next) {
     //记下离开时滑块位置
@@ -51,13 +63,16 @@ export default {
   },
   methods: {
     playThisSong(item, index) {
-      var markedListIndex = index;
-      this.$store.commit("sendMarkedPageActive");
-      this.$store.commit("sendMarkedListIndex", markedListIndex);
+      var payload = {
+        index: index,
+        activatedPage: 'markedListPage'
+      }
+
+      this.$store.commit("sendCurrentIndex", payload)
       this.$store.commit("playCurrentSong");
     },
 
-    markSong(item, index) {
+    markSong(item) {
       this.$store.commit('sendMarkedSong', item)
     },
   },

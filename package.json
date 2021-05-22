@@ -1,14 +1,12 @@
 {
   "name": "mini-music",
-  "version": "1.1.0",
+  "version": "1.3.0",
+  "private": true,
   "description": "一个简单、美观的音乐播放器",
-  "homepage": "https://gitee.com/cgper/miniMusic",
   "author": {
     "name": "CGPer",
     "email": "1833608478@qq.com"
   },
-  "license": "MulanPSL2",
-  "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -19,13 +17,13 @@
   },
   "main": "background.js",
   "dependencies": {
-    "axios": "^0.20.0",
+    "axios": "^0.21.1",
     "core-js": "^3.6.5",
-    "element-ui": "^2.13.2",
     "normalize.css": "^8.0.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
-    "vuex": "^3.4.0"
+    "vuex": "^3.4.0",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -33,14 +31,16 @@
     "@vue/cli-plugin-vuex": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "babel-plugin-component": "^1.1.1",
-    "electron": "^9.0.0",
+    "electron": "^11.0.0",
     "electron-devtools-installer": "^3.1.0",
-    "vue-cli-plugin-electron-builder": "~2.0.0-rc.4",
+    "vue-cli-plugin-electron-builder": "~2.0.0",
     "vue-template-compiler": "^2.6.11"
   },
   "browserslist": [
     "> 1%",
     "last 2 versions",
     "not dead"
-  ]
+  ],
+  "homepage": "https://gitee.com/cgper/miniMusic",
+  "license": "MulanPSL2"
 }

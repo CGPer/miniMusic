@@ -1,23 +1,38 @@
 <template>
-<div class="top-box">
-  <div class="back-or-forward">
-    <img @click="goBack" src="@/assets/back.svg" width="20px" />
-    <img @click="goForward" src="@/assets/forward.svg" width="20px" />
-  </div>
-  <input type="text" class="search-input" v-model.trim="searchText" @change="searchSong" placeholder="搜索音乐" @focus="showSearchHistory" @blur="hideSearchHistory" @input="isShowSearchHistory = true" />
-  <div class="search-history-box" v-show="isShowSearchHistory">
-    <div class="search-history-item" v-for="(item, index) in searchHistoryArr" :key="index">
-      <div class="search-history-block">
-        <div class="search-history-block-text" @click="searchThisText(item)">
-          {{ item.searchText }}
-        </div>
-        <div class="delete-this-search-text" @click="deleteSearchText(index)">
-          <img src="@/assets/delete-search-text.svg" width="20px" />
+  <div class="top-box">
+    <div class="back-or-forward">
+      <img @click="goBack" src="@/assets/back.svg" width="20px" />
+      <img @click="goForward" src="@/assets/forward.svg" width="20px" />
+    </div>
+    <div class="input-box">
+      <input
+        type="text"
+        class="search-input"
+        v-model.trim="searchText"
+        @change="searchSong"
+        placeholder="搜索音乐"
+        @focus="showSearchHistory"
+        @blur="hideSearchHistory"
+        @input="isShowSearchHistory = true"
+      />
+      <div class="search-history-box" v-show="isShowSearchHistory">
+        <div
+          class="search-history-item"
+          v-for="(item, index) in searchHistoryArr"
+          :key="index"
+        >
+          <div class="search-history-block">
+            <div class="search-history-block-text" @click="searchThisText(item)">
+              {{ item.searchText }}
+            </div>
+            <div class="delete-this-search-text" @click="deleteSearchText(index)">
+              <img src="@/assets/delete-search-text.svg" width="20px" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -34,9 +49,7 @@ export default {
   mounted() {
     //获取历史搜索记录
     if (localStorage.hasOwnProperty("serachHistoryArr")) {
-      this.searchHistoryArr = JSON.parse(
-        localStorage.getItem("serachHistoryArr")
-      );
+      this.searchHistoryArr = JSON.parse(localStorage.getItem("serachHistoryArr"));
     }
   },
   methods: {
@@ -49,28 +62,31 @@ export default {
     },
 
     searchSong() {
-      this.isShowSearchHistory = false
+      this.isShowSearchHistory = false;
       if (this.searchText !== "") {
-        //防止输入空格也被用于请求歌曲
-        this.$router.push("SearchListPage");
-        this.$store.commit("handleSearchSong", this.searchText);
+        //防止无输入搜索
+
+        //切换到搜索页面
+        this.$router.push({ path: "/SearchPage" });
+
+        this.$store.commit("setSearchText", this.searchText);
       }
 
       //下面开始记录搜索历史和搜索频率
-      var thisSearchText = this.searchText;
+      let thisSearchText = this.searchText;
 
       if (thisSearchText !== "") {
         //防止空格加入搜索历史
-        var searchHistoryObj = {
+        let searchHistoryObj = {
           searchText: thisSearchText,
           searchFrequency: 1,
         };
-        var haveSameSearchText = false;
+        let haveSameSearchText = false;
 
         //如果有相同的搜索内容，频率加一
-        this.searchHistoryArr.some((each) => {
-          if (each.searchText === thisSearchText) {
-            each.searchFrequency += 1;
+        this.searchHistoryArr.some((item) => {
+          if (item.searchText === thisSearchText) {
+            item.searchFrequency += 1;
             haveSameSearchText = true;
             return true;
           }
@@ -96,10 +112,7 @@ export default {
         this.searchHistoryArr.sort(descendingOrder);
 
         //将搜索历史保存到浏览器
-        localStorage.setItem(
-          "serachHistoryArr",
-          JSON.stringify(this.searchHistoryArr)
-        );
+        localStorage.setItem("serachHistoryArr", JSON.stringify(this.searchHistoryArr));
       }
     },
 
@@ -107,23 +120,22 @@ export default {
       this.searchText = item.searchText;
       this.searchSong();
 
-      //搜索后将搜索页面滑动到顶端
-      this.$EventBus.$emit("scrollToTop")
-
       //隐藏搜索提示框
       this.isShowSearchHistory = false;
     },
 
     showSearchHistory() {
-      this.isShowSearchHistory = true
-      this.$store.commit("sendSearchInputOnFocus", true)
+      this.isShowSearchHistory = true;
+
+      //用户正在输入，需要暂时移除快捷键功能。
+      this.$store.commit("sendInputFocus", true);
     },
 
     hideSearchHistory() {
-      this.$store.commit("sendSearchInputOnFocus", false)
+      //用户结束输入，需要继续开启快捷键监听
+      this.$store.commit("sendInputFocus", false);
       //延时隐藏历史搜索，不然点击历史搜索无法输入
       setTimeout(() => {
-
         //删除历史搜索词条时，防止失焦隐藏搜索历史
         if (this.isDeletingSearchText === false) {
           this.isShowSearchHistory = false;
@@ -133,13 +145,12 @@ export default {
 
     deleteSearchText(index) {
       this.isDeletingSearchText = true;
+
       //删除用户想要删除的历史搜索词条
       this.searchHistoryArr.splice(index, 1);
+
       //将搜索历史保存到浏览器
-      localStorage.setItem(
-        "serachHistoryArr",
-        JSON.stringify(this.searchHistoryArr)
-      );
+      localStorage.setItem("serachHistoryArr", JSON.stringify(this.searchHistoryArr));
 
       //这个延时大于历史搜索关闭延时，
       //防止在删除历史搜索词条时隐藏历史搜索
@@ -182,15 +193,22 @@ export default {
   margin-left: 10px;
 }
 
+.input-box {
+  position: absolute;
+  width: 400px;
+  height: 30px;
+  float: left;
+  margin-left: 150px;
+  margin-top: 10px;
+}
+
 .search-input {
   border: none;
   width: 400px;
   height: 30px;
-  float: left;
-  margin-left: 50px;
-  margin-top: 10px;
+  box-sizing: border-box;
   padding-left: 8px;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
 }
 
@@ -201,15 +219,16 @@ export default {
 }
 
 .search-history-box {
-  width: 405px;
+  width: 400px;
   max-height: 100px;
   position: absolute;
-  margin-left: 100px;
-  margin-top: 50px;
+  top: 35px;
+  left: 0;
+  z-index: 100;
   overflow-x: hidden;
   overflow-y: scroll;
   border-radius: 10px;
-  background-color: white;
+  background-color: var(--background-color);
   box-shadow: 0 0 5px var(--highlight-deep-color);
 }
 

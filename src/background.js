@@ -65,11 +65,19 @@ app.on('activate', () => {
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', () => {
+// Some APIs can only be used after this event occurs
+
+//解决Linux下背景无法透明问题
+if(process.platform === "linux") {
+  app.commandLine.appendSwitch('enable-transparent-visuals');
+  app.disableHardwareAcceleration();
+}
+
+app.on('ready',() => {
   setTimeout(() => {
-    createWindow() //解决Linux下背景无法透明问题
-  },100)
+    createWindow() 
+  },200)
+ 
 })
 
 // Exit cleanly on request from parent process in development mode.

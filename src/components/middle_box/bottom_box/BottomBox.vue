@@ -5,8 +5,7 @@
         <div
           class="progressed"
           :style="{
-            width:
-              duration === null ? 0 : (currentTime / duration) * 760 + 'px',
+            width: duration === null ? 0 : (currentTime / duration) * 760 + 'px',
           }"
         ></div>
       </div>
@@ -14,13 +13,12 @@
         class="slider-dot"
         :style="{
           'margin-left':
-            (duration === null ? -6 : (currentTime / duration) * 760 - 6) +
-            'px',
+            (duration === null ? -6 : (currentTime / duration) * 760 - 6) + 'px',
         }"
         @mousedown="songDotDown"
         @mousemove="songDotMove"
       >
-        <div class="breath-dot"></div>
+        <div class="breath-dot" :style="breathStyle"></div>
       </div>
     </div>
     <div class="time-box">{{ showTime }}</div>
@@ -37,13 +35,9 @@
       <div class="speed-options-box" v-show="isShowSpeedOptions">
         <div class="speed-option" @click="changeSpeed(2, '2x')">2.0x</div>
         <div class="speed-option" @click="changeSpeed(1.5, '1.5x')">1.5x</div>
-        <div class="speed-option" @click="changeSpeed(1.25, '1.25x')">
-          1.25x
-        </div>
+        <div class="speed-option" @click="changeSpeed(1.25, '1.25x')">1.25x</div>
         <div class="speed-option" @click="changeSpeed(1, '1.0x')">1.0x</div>
-        <div class="speed-option" @click="changeSpeed(0.75, '0.75x')">
-          0.75x
-        </div>
+        <div class="speed-option" @click="changeSpeed(0.75, '0.75x')">0.75x</div>
         <div class="speed-option" @click="changeSpeed(0.5, '0.5x')">0.5x</div>
       </div>
     </div>
@@ -74,14 +68,16 @@
         </div>
       </div>
     </div>
+    <div class="like-box">
+      <img
+        @click="likeSong"
+        :src="currentList[currentListIndex] === null ? likeImgUrl : setLikeImgUrl"
+      />
+    </div>
     <div class="mark-box">
       <img
-        @click="markSong"
-        :src="
-          currentList[currentListIndex] === null
-            ? this.markImgUrl
-            : setMarkImgUrl
-        "
+        @click="addMarkSong"
+        :src="currentList[currentListIndex] === null ? markImgUrl : setMarkImgUrl"
       />
     </div>
     <div class="play-contral-box">
@@ -100,16 +96,9 @@
       <div class="volume-percentage">
         {{ parseInt((volumeDotX / 120) * 100) + "%" }}
       </div>
-      <div
-        class="volume-adjust-box"
-        @click="setVolumeDot"
-        ref="volumeAdjustBox"
-      >
+      <div class="volume-adjust-box" @click="setVolumeDot" ref="volumeAdjustBox">
         <div class="volume-adjust-bar">
-          <div
-            class="volume-progressed"
-            :style="{ width: volumeDotX + 'px' }"
-          ></div>
+          <div class="volume-progressed" :style="{ width: volumeDotX + 'px' }"></div>
         </div>
         <div
           class="slider-dot"
@@ -117,7 +106,7 @@
           @mousedown="volumeDotDown"
           @mousemove="volumeDotMove"
         >
-          <div class="breath-dot"></div>
+          <div class="volume-dot"></div>
         </div>
       </div>
     </div>
@@ -150,6 +139,8 @@ export default {
       singleCycleImgUrl: require("@/assets/single-cycle.svg"),
       listCycleImgUrl: require("@/assets/list-cycle.svg"),
       randomImgUrl: require("@/assets/random.svg"),
+      likeImgUrl: require("@/assets/like.svg"),
+      likedImgUrl: require("@/assets/liked.svg"),
       markImgUrl: require("@/assets/mark.svg"),
       markedImgUrl: require("@/assets/marked.svg"),
       isMuteNow: false,
@@ -157,17 +148,27 @@ export default {
       playSpeed: 1,
       isShowSpeedOptions: false,
       isShowModeOptions: false,
+      breathStyle: {},
     };
   },
   computed: {
-    ...mapState({
-      currentList: (state) => state.currentList,
-      currentListIndex: (state) => state.currentListIndex,
-      currentSongUrl: (state) => state.currentSongUrl,
-      markedList: (state) => state.markedList,
-      playMode: (state) => state.playMode,
-      isSearchInputOnFocus: (state) => state.isSearchInputOnFocus,
-    }),
+    ...mapState([
+      "currentList",
+      "currentListIndex",
+      "currentSongUrl",
+      "likedList",
+      "markList",
+      "playMode",
+      "isInputFocus",
+    ]),
+
+    songUrl() {
+      if (this.currentList.length !== 0) {
+        return this.currentList[this.currentListIndex];
+      } else {
+        return "";
+      }
+    },
 
     showTime() {
       //实时显示歌曲播放时间进度
@@ -189,35 +190,54 @@ export default {
       return current_m + ":" + current_s + "/" + duration_m + ":" + duration_s;
     },
 
-    setMarkImgUrl() {
-      var isCurrentListEmpty = false;
+    setLikeImgUrl() {
+      let currentSongID = null;
+
       if (this.currentList.length !== 0) {
-        //将已mark的歌曲逐一与当前播放歌曲对比，如有mark中的歌曲，则红心点亮
-        var haveMatchedId = false;
-        for (let i = 0; i < this.markedList.length; i++) {
-          if (
-            this.currentList[this.currentListIndex].songmid ===
-            this.markedList[i].songmid
-          ) {
-            haveMatchedId = true;
-            break;
-          }
-        }
-      } else {
-        isCurrentListEmpty = true;
+        currentSongID = this.currentList[this.currentListIndex].songID;
       }
-      return isCurrentListEmpty
-        ? this.markImgUrl
-        : haveMatchedId === true
-        ? this.markedImgUrl
-        : this.markImgUrl;
+
+      let isThisSongLiked = false;
+
+      //检测当前歌曲是否已在喜欢列表中
+      //在，则点亮红心。否则不点亮。
+      this.likedList.forEach((item, index) => {
+        if (item.songID === currentSongID) {
+          isThisSongLiked = true;
+        }
+      });
+
+      return isThisSongLiked ? this.likedImgUrl : this.likeImgUrl;
+    },
+
+    setMarkImgUrl() {
+      let currentSongID = null;
+
+      if (this.currentList.length !== 0) {
+        currentSongID = this.currentList[this.currentListIndex].songID;
+      }
+
+      let isThisSongMarked = false;
+
+      //检测当前歌曲是否已在收藏列表中
+      //在，则点亮star。否则不点亮。
+      this.markList.forEach((songList) => {
+        songList.list.forEach((item) => {
+          if (item.songID === currentSongID) {
+            isThisSongMarked = true;
+          }
+        });
+      });
+
+      return isThisSongMarked ? this.markedImgUrl : this.markImgUrl;
     },
   },
   watch: {
-    //由于按键监听会干扰搜索输入，所以这里监测用户是否正在搜索输入
+    //由于按键监听(快捷键)会干扰搜索输入，所以这里监测用户是否正在搜索输入
     //搜索时一定要移除按键监听,搜索结束再添加监听
-    isSearchInputOnFocus: function () {
-      if (this.isSearchInputOnFocus === true) {
+    isInputFocus(newValue) {
+      console.log("isInputFocus", newValue);
+      if (newValue === true) {
         document.removeEventListener("keydown", this.keyDown);
       } else {
         document.addEventListener("keydown", this.keyDown);
@@ -231,7 +251,7 @@ export default {
     }
 
     //初始化audio
-    var audio = document.querySelector("#audio");
+    let audio = document.querySelector("#audio");
     this.audio = audio;
     this.audio.volume = this.volumeDotX / 120;
     this.audio.playbackRate = this.playSpeed;
@@ -242,22 +262,27 @@ export default {
     this.addMouseUpEventListener();
   },
   methods: {
+    //音乐播放状态监听
     addAudioEventListeners() {
       this.audio.addEventListener("canplay", this.getDuration);
       this.audio.addEventListener("timeupdate", this.getCurrentTime);
       this.audio.addEventListener("ended", this.autoPlayNextSong);
+      this.audio.addEventListener("playing", this.playing);
+      this.audio.addEventListener("pause", this.pause);
     },
 
+    //键盘事件监听
     addKeyboardEventListener() {
       document.addEventListener("keydown", this.keyDown);
     },
 
+    //MouseUp事件监听
     addMouseUpEventListener() {
       document.addEventListener("mouseup", this.mouseUp);
     },
 
     keyDown(e) {
-      //防止按空格键页面向下滚动
+      //阻止按键默认事件，比如按空格键页面向下滚动
       e.preventDefault();
 
       switch (e.code) {
@@ -276,10 +301,10 @@ export default {
           this.playPreviousSong();
           break;
 
-        //方向上键为音量加20%
+        //方向上键为音量加10%
         case "ArrowUp":
           if (this.volumeDotX < 120) {
-            this.volumeDotX += 24;
+            this.volumeDotX += 12;
             if (this.volumeDotX > 120) {
               this.volumeDotX = 120;
             }
@@ -287,10 +312,10 @@ export default {
           }
           break;
 
-        //方向下键为音量减20%
+        //方向下键为音量减10%
         case "ArrowDown":
           if (this.volumeDotX > 0) {
-            this.volumeDotX -= 24;
+            this.volumeDotX -= 12;
             if (this.volumeDotX < 0) {
               this.volumeDotX = 0;
             }
@@ -310,22 +335,35 @@ export default {
     },
 
     getDuration() {
+      this.$store.commit("albumRotateRunning");
       this.duration = this.audio.duration;
       this.playStateImgUrl = this.playingImgUrl;
 
       //将上一首的播放速率延续到下一首
       this.audio.playbackRate = this.playSpeed;
 
-      //检测app是否是刚启动，防止刚启动专辑图片就开始旋转
-      this.$store.commit("sendHaveStarted", true);
-
-      //app已启动，播放歌曲专辑图片开始转动
+      //音乐开始播放，播放歌曲专辑图片开始转动
       this.$store.commit("albumRotateRunning");
     },
 
     getCurrentTime() {
+      //实时获取歌曲的当前播放时间
       this.currentTime = this.audio.currentTime;
       this.$store.commit("sendCurrentTime", this.currentTime);
+    },
+
+    playing() {
+      //正在播放歌曲，呼吸灯闪烁
+      this.breathStyle = {
+        animation: "breath 1.5s linear infinite",
+      };
+    },
+
+    pause() {
+      //暂停播放，songDot变红色
+      this.breathStyle = {
+        backgroundColor: "#ff6a6a",
+      };
     },
 
     changeCurrentTime(value) {
@@ -369,26 +407,31 @@ export default {
       }, 200);
     },
 
-    markSong() {
-      //防止当前没歌却点击mark
+    likeSong() {
+      //防止当前没歌却点击like
       if (this.currentList.length !== 0) {
-        this.$store.commit(
-          "sendMarkedSong",
-          this.currentList[this.currentListIndex]
-        );
+        this.$store.commit("sendLikedSong", this.currentList[this.currentListIndex]);
+      }
+    },
+
+    addMarkSong() {
+      if (this.currentList.length !== 0) {
+        let selectedSong = this.currentList[this.currentListIndex];
+        this.$store.commit("sendSelectedSong", selectedSong);
+        this.$store.commit("showDialog", "add-mark-song");
       }
     },
 
     playPreviousSong() {
       //随机播放模式下，上一首也是随机
       if (this.playMode === "randomMode") {
-        this.$store.commit("handleRandomMode");
+        this.$store.dispatch("handleRandomMode");
       } else {
         //其他模式上一首按顺序播放上一首
-        this.$store.commit("playPreviousSong");
+        this.$store.dispatch("playPreviousSong");
       }
 
-      //将上一首的播放速度设置为用户设置的播放速度
+      //将上一首的播放速度延续到下一首
       //因为切歌后播放速度会自动恢复到1
       setTimeout(() => {
         this.audio.playbackRate = this.playSpeed;
@@ -415,10 +458,11 @@ export default {
     },
 
     autoPlayNextSong() {
+      this.$store.commit("albumRotatePaused");
       switch (this.playMode) {
         case "listForwardMode":
           //默认顺序播放，不做处理,直接下一首
-          this.$store.commit("playNextSong");
+          this.$store.dispatch("playNextSong");
           break;
 
         case "singleCycleMode":
@@ -428,12 +472,12 @@ export default {
 
         case "listCycleMode":
           //列表循环，处理已嵌入vuex中的playNextSong中，所以直接下一首
-          this.$store.commit("playNextSong");
+          this.$store.dispatch("playNextSong");
           break;
 
         case "randomMode":
           //随机播放
-          this.$store.commit("handleRandomMode");
+          this.$store.dispatch("handleRandomMode");
           break;
       }
 
@@ -444,9 +488,9 @@ export default {
 
     playNextSong() {
       if (this.playMode == "randomMode") {
-        this.$store.commit("handleRandomMode");
+        this.$store.dispatch("handleRandomMode");
       } else {
-        this.$store.commit("playNextSong");
+        this.$store.dispatch("playNextSong");
       }
 
       setTimeout(() => {
@@ -462,9 +506,13 @@ export default {
 
     songDotMove(e) {
       if (this.isSongDotMovable) {
+        //呼吸点调成橙色
+        this.breathStyle = {
+          backgroundColor: "orange",
+        };
+
         //滑动距离等于点击位置坐标减去progressBox左侧坐标
-        this.songDotX =
-          e.x - this.$refs.progressBox.getBoundingClientRect().left;
+        this.songDotX = e.x - this.$refs.progressBox.getBoundingClientRect().left;
         if (this.songDotX < 0) {
           //防止滑块滑出界
           this.songDotX = 0;
@@ -491,8 +539,7 @@ export default {
     volumeDotMove(e) {
       if (this.isVolumeDotMovable) {
         //音量坐标等于移动后坐标减去volume-adjust-box左侧的坐标
-        this.volumeDotX =
-          e.x - this.$refs.volumeAdjustBox.getBoundingClientRect().left;
+        this.volumeDotX = e.x - this.$refs.volumeAdjustBox.getBoundingClientRect().left;
         if (this.volumeDotX < 0) {
           this.volumeDotX = 0;
         }
@@ -504,8 +551,7 @@ export default {
     },
 
     setVolumeDot(e) {
-      this.volumeDotX =
-        e.x - this.$refs.volumeAdjustBox.getBoundingClientRect().left;
+      this.volumeDotX = e.x - this.$refs.volumeAdjustBox.getBoundingClientRect().left;
       if (this.volumeDotX < 0) {
         this.volumeDotX = 0;
       }
@@ -555,12 +601,12 @@ export default {
   height: 2px;
   margin-top: 5px;
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: var(--progress-bar-color);
 }
 
 .progressed {
   height: 100%;
-  background-color: var(--highlight-color);
+  background-color: #c5b5f0;
 }
 
 .slider-dot {
@@ -587,6 +633,21 @@ export default {
   margin-left: 3px;
   border-radius: 50%;
   background-color: var(--highlight-deep-color);
+}
+
+@keyframes breath {
+  0% {
+    background-color: #28ca42;
+  }
+  49% {
+    background-color: #28ca42;
+  }
+  50% {
+    background-color: #fff;
+  }
+  100% {
+    background-color: #fff;
+  }
 }
 
 .time-box {
@@ -641,10 +702,24 @@ export default {
   position: absolute;
   width: 56px;
   height: 165px;
-  margin-top: -190px;
+  z-index: 999;
+  top: 0px;
+  transform: translateY(-100%);
   border-radius: 8px;
-  background-color: white;
-  box-shadow: 0 0 10px var(--highlight-deep-color);
+  background-color: var(--background-color);
+  filter: drop-shadow(0 0 10px var(--highlight-deep-color));
+}
+
+.speed-options-box::before {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  content: "";
+  left: 50%;
+  bottom: -6px;
+  border-radius: 2px;
+  transform: translateX(-50%) rotate(45deg);
+  background-color: var(--background-color);
 }
 
 .speed-option {
@@ -697,11 +772,24 @@ export default {
   width: 100px;
   height: 115px;
   position: absolute;
-  margin-top: -105px;
-  margin-left: -35px;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%) translateY(-100%);
   border-radius: 10px;
-  background-color: white;
-  box-shadow: 0 0 10px var(--highlight-deep-color);
+  background-color: var(--background-color);
+  filter: drop-shadow(0 0 10px var(--highlight-deep-color));
+}
+
+.mode-options-box::before {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  content: "";
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  background-color: var(--background-color);
+  border-radius: 2px;
 }
 
 .mode-options-box:hover {
@@ -768,11 +856,33 @@ export default {
   transform: scale(1.5);
 }
 
+.like-box {
+  width: 30px;
+  height: 50px;
+  float: left;
+}
+
+.like-box > img {
+  width: 20px;
+  height: 20px;
+  margin-top: 15px;
+  margin-left: 5px;
+}
+
+.like-box > img:hover {
+  cursor: pointer;
+  transform: scale(1.2);
+}
+
+.like-box > img:active {
+  transform: scale(1.5);
+}
+
 .play-contral-box {
   width: 124px;
   height: 50px;
   float: left;
-  margin-left: 115px;
+  margin-left: 80px;
 }
 
 .previous-song {
@@ -868,11 +978,20 @@ export default {
   height: 2px;
   margin-top: 5px;
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: var(--progress-bar-color);
 }
 
 .volume-progressed {
   height: 100%;
-  background-color: var(--highlight-color);
+  background-color: #c5b5f0;
+}
+
+.volume-dot {
+  width: 6px;
+  height: 6px;
+  margin-top: 3px;
+  margin-left: 3px;
+  border-radius: 50%;
+  background-color: var(--highlight-deep-color);
 }
 </style>

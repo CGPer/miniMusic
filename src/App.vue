@@ -1,95 +1,235 @@
 <template>
-<div id="app">
-  <div class="app-background" :style="getBgStyle"></div>
-  <div class="app-background-above">
-    <left-nav></left-nav>
-    <middle-box></middle-box>
-    <right-bar></right-bar>
+  <div id="app">
+    <div class="app-background" :style="appStyle">
+      <background-color></background-color>
+    </div>
+    <div class="app-background-above" :style="appStyle">
+      <!-- 展示需要显示的对话框 -->
+      <component v-if="isShowDialog" :is="dialog"></component>
+      <left-nav></left-nav>
+      <middle-box></middle-box>
+      <right-bar></right-bar>
+    </div>
+    <setting :style="settingPanelStyle"></setting>
   </div>
-</div>
 </template>
 
 <script>
-import LeftNav from './components/left_nav/LeftNav'
-import MiddleBox from './components/middle_box/MiddleBox'
-import RightBar from './components/right_bar/RightBar'
+import { mapState } from "vuex";
+
+import BackgroundColor from "@/common/BackgroundColor.vue";
+import LeftNav from "./components/left_nav/LeftNav";
+import MiddleBox from "./components/middle_box/MiddleBox";
+import RightBar from "./components/right_bar/RightBar";
+import RemoveSongList from "@/common/dialog/RemoveSongList.vue";
+import AddMarkSong from "@/common/dialog/AddMarkSong.vue";
+import About from "@/common/dialog/About.vue";
+import MvPlayer from "@/common/dialog/MvPlayer.vue";
+import ChooseSinger from "@/common/dialog/ChooseSinger.vue";
+import Setting from "@/common/setting/Setting.vue";
 
 export default {
-  name: 'app',
+  name: "app",
   components: {
     LeftNav,
     MiddleBox,
-    RightBar
+    RightBar,
+    AddMarkSong,
+    RemoveSongList,
+    About,
+    MvPlayer,
+    ChooseSinger,
+    Setting,
+    BackgroundColor,
   },
   data() {
     return {
-      defaultAlbumImgUrl: require("@/assets/default-album-img.jpg"),
-      albumImgUrl: null,
-      bgStyle: {}
-    }
+      appStyle: {},
+      settingPanelStyle: {},
+    };
   },
   computed: {
-    getBgStyle() {
-      //刚启动和歌曲没有专辑图片时，使用默认专辑图片作为背景
-      if (this.$store.state.currentList.length == 0 || this.$store.state.currentList[this.$store.state.currentListIndex].albumname == "   ") {
-        this.albumImgUrl = this.defaultAlbumImgUrl
+    ...mapState(["dialog", "isShowDialog", "isShowSettingPanel", "backgroundTheme"]),
+  },
+  watch: {
+    //绘制设置面板展示和隐藏的翻转动画
+    isShowSettingPanel: function (newValue) {
+      if (newValue === true) {
+        this.appStyle = {
+          animation: "Flip_0-90 0.3s linear forwards",
+        };
+        this.settingPanelStyle = {
+          animation: "Flip_90-180 0.3s linear 0.3s forwards",
+        };
       } else {
-        this.albumImgUrl = this.$store.state.currentList[this.$store.state.currentListIndex].albumimg
+        this.settingPanelStyle = {
+          animation: "Flip_180-90 0.3s linear forwards",
+        };
+        this.appStyle = {
+          transform: "rotateY(90deg)",
+          animation: "Flip_90-0 0.3s linear 0.3s forwards",
+        };
       }
-
-      //请求图片需要时间，背景会短暂变成白色形成闪烁
-      //所以延迟背景图片改变，给出请求背景图片（专辑图片）的时间
-      setTimeout(() => {
-        this.bgStyle = {
-          'background-image': 'url(' + this.albumImgUrl + ')'
-        }
-      }, 1000)
-
-      return this.bgStyle
-    }
+    },
   },
   mounted() {
-    this.$store.commit('getHistoryData')
-    this.$router.push('Top100Page')
-  }
-}
+    this.$store.commit("getHistoryData");
+    this.$router.push({ path: "DiscoverPage" });
+  },
+};
 </script>
 
 <style>
 :root {
   --highlight-color: #c5b5f0;
-  --highlight-deep-color: #7E57C2;
+  --highlight-deep-color: #7e57c2;
+  --font-size: 16px;
+  --font-color: black;
+  --font-family: "";
+  --font-weight: normal;
+  --lyric-font-family: "";
+  --lyric-font-size: 20px;
+  --lyric-font-weight: normal;
+  --background-color: #fdfdfd;
+  --progress-bar-color: rgba(255, 255, 255, 0.1);
+}
+
+@font-face {
+  font-family: "清松手写体";
+  src: url("./assets/font/清松手写体.ttf");
+}
+
+@font-face {
+  font-family: "新叶念体";
+  src: url("./assets/font/新叶念体.otf");
+}
+
+@font-face {
+  font-family: "点点像素体";
+  src: url("./assets/font/点点像素体.otf");
+}
+
+@font-face {
+  font-family: "汉字拼音体";
+  src: url("./assets/font/汉字拼音体.ttf");
+}
+
+@font-face {
+  font-family: "寒蝉手拙体";
+  src: url("./assets/font/寒蝉手拙体.ttf");
+}
+
+@font-face {
+  font-family: "品如手写体";
+  src: url("./assets/font/品如手写体.ttf");
+}
+
+@font-face {
+  font-family: "阿朱泡泡体";
+  src: url("./assets/font/阿朱泡泡体.ttf");
+}
+
+@font-face {
+  font-family: "OPPO Sans";
+  src: url("./assets/font/OPPO Sans.ttf");
+}
+
+@font-face {
+  font-family: "杨任东竹石体";
+  src: url("./assets/font/杨任东竹石体.ttf");
+}
+
+@font-face {
+  font-family: "方正楷体简体";
+  src: url("./assets/font/方正楷体简体.ttf");
+}
+
+@font-face {
+  font-family: "方正楷体繁体";
+  src: url("./assets/font/方正楷体繁体.ttf");
+}
+
+@font-face {
+  font-family: "站酷快乐体";
+  src: url("./assets/font/站酷快乐体.ttf");
+}
+
+body {
+  position: relative;
+  perspective: 20000px;
 }
 
 #app {
-  width: 1000px;
-  height: 800px;
+  width: 1030px;
+  height: 830px;
   position: relative;
-  margin-left: 15px;
-  margin-top: 15px;
   border-radius: 20px;
   -webkit-user-select: none;
-  box-shadow: 0 0 10px 5px gray;
   overflow: hidden;
-  background-color: white;
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  font-weight: var(--font-weight);
+  color: var(--font-color);
+}
+
+@keyframes Flip_0-90 {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(90deg);
+  }
+}
+
+@keyframes Flip_90-0 {
+  from {
+    transform: rotateY(90deg);
+  }
+  to {
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes Flip_90-180 {
+  from {
+    transform: rotateY(-90deg);
+  }
+  to {
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes Flip_180-90 {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(-90deg);
+  }
 }
 
 .app-background {
-  width: 100%;
-  height: 100%;
+  width: 1000px;
+  height: 800px;
   position: absolute;
-  background-image: url("./assets/default-album-img.jpg");
-  background-repeat: no-repeat;
-  background-size: cover;
-  filter: blur(150px);
+  margin-left: 15px;
+  margin-top: 15px;
+  border-radius: 20px;
+  background-color: #fff;
+  overflow: hidden;
 }
 
 .app-background-above {
-  width: 100%;
-  height: 100%;
+  width: 1000px;
+  height: 800px;
   position: absolute;
+  margin-left: 15px;
+  margin-top: 15px;
+  border-radius: 20px;
+  box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.3);
 }
 
+/* 下面修改全局滚动条样式 */
 ::-webkit-scrollbar {
   width: 10px;
 }

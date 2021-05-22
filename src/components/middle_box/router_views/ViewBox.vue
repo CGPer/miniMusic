@@ -1,7 +1,7 @@
 <template>
   <div class="view-box">
     <keep-alive>
-      <router-view></router-view>
+      <router-view name="nav"></router-view>
     </keep-alive>
   </div>
 </template>
